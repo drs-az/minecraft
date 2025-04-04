@@ -1,4 +1,4 @@
-// game.js - working version of Steve's Adventure with jump fixed
+// game.js - updated with higher jump and camera follow for side-scrolling
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -32,6 +32,13 @@ class MainScene extends Phaser.Scene {
 
     // Input
     this.cursors = this.input.keyboard.createCursorKeys();
+
+    // Camera follow for side scrolling
+    this.cameras.main.startFollow(this.player);
+    this.cameras.main.setBounds(0, 0, 1600, 600); // Example: scrolling up to 1600px wide world
+
+    // World bounds
+    this.physics.world.setBounds(0, 0, 1600, 600);
   }
 
   update() {
@@ -46,9 +53,9 @@ class MainScene extends Phaser.Scene {
       this.player.setVelocityX(0);
     }
 
-    // Jump
+    // Jump (higher jump)
     if ((this.cursors.up.isDown || this.cursors.space.isDown) && isTouchingGround) {
-      this.player.setVelocityY(-330);
+      this.player.setVelocityY(-450); // Increased jump height
     }
   }
 }
