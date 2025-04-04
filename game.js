@@ -1,4 +1,4 @@
-// game.js - updated to use external HTML start button and clamp camera vertically
+// game.js - cleaned up to fully remove text-based start, and start game with button properly
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -38,7 +38,7 @@ class MainScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
 
     this.cameras.main.startFollow(this.player);
-    this.cameras.main.setBounds(0, 0, Number.MAX_SAFE_INTEGER, 600); // clamp vertically
+    this.cameras.main.setBounds(0, 0, Number.MAX_SAFE_INTEGER, 600);
     this.physics.world.setBounds(0, 0, Number.MAX_SAFE_INTEGER, 600);
 
     this.score = 0;
@@ -52,12 +52,19 @@ class MainScene extends Phaser.Scene {
       fill: '#000'
     }).setScrollFactor(0);
 
+    // Remove any in-game text start
+    // Set up button listener to start the game
+    this.setupStartButton();
+  }
+
+  setupStartButton() {
     const startButton = document.getElementById('start-button');
     if (startButton) {
+      startButton.style.display = 'block';
       startButton.addEventListener('click', () => {
         startButton.style.display = 'none';
         this.startGame();
-      });
+      }, { once: true }); // ensure it only runs once
     }
   }
 
