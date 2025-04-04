@@ -91,8 +91,8 @@ class MainScene extends Phaser.Scene {
     const button = document.createElement('button');
     button.innerText = 'Restart';
     button.style.position = 'absolute';
-    button.style.top = '50%';
     button.style.left = '50%';
+    button.style.top = 'calc(50% + 60px)'; // Positioned below the game over text
     button.style.transform = 'translate(-50%, -50%)';
     button.style.fontSize = '24px';
     button.style.padding = '12px 24px';
