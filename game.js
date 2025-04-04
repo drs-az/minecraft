@@ -1,4 +1,4 @@
-// game.js - centered game over text updates for better visuals
+// game.js - adds win message and restart button on timer end
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -61,12 +61,12 @@ class MainScene extends Phaser.Scene {
       fill: '#000'
     }).setScrollFactor(0).setDepth(10);
 
-    // Visual hearts for health
     for (let i = 0; i < this.maxHealth; i++) {
       let heart = this.add.image(750 - i * 30, 50, 'heart').setScrollFactor(0).setDepth(10).setScale(0.5);
       this.heartIcons.push(heart);
     }
 
+    this.createRestartButton();
     this.setupStartButton();
   }
 
@@ -87,6 +87,30 @@ class MainScene extends Phaser.Scene {
     }
   }
 
+  createRestartButton() {
+    const button = document.createElement('button');
+    button.innerText = 'Restart';
+    button.style.position = 'absolute';
+    button.style.top = '50%';
+    button.style.left = '50%';
+    button.style.transform = 'translate(-50%, -50%)';
+    button.style.fontSize = '24px';
+    button.style.padding = '12px 24px';
+    button.style.backgroundColor = '#4CAF50';
+    button.style.color = '#fff';
+    button.style.border = 'none';
+    button.style.borderRadius = '8px';
+    button.style.cursor = 'pointer';
+    button.style.display = 'none';
+    button.style.zIndex = '100';
+    button.id = 'restart-button';
+    document.getElementById('game-container').appendChild(button);
+
+    button.addEventListener('click', () => {
+      window.location.reload();
+    });
+  }
+
   startGame() {
     this.gameStarted = true;
     this.timerEvent = this.time.addEvent({
@@ -96,7 +120,8 @@ class MainScene extends Phaser.Scene {
         this.timerText.setText('Time: ' + this.timeRemaining);
         if (this.timeRemaining <= 0) {
           this.scene.pause();
-          this.showGameOverText('Game Over!');
+          this.showGameOverText('You win!');
+          document.getElementById('restart-button').style.display = 'block';
         }
       },
       callbackScope: this,
@@ -143,6 +168,7 @@ class MainScene extends Phaser.Scene {
     if (this.health <= 0) {
       this.scene.pause();
       this.showGameOverText('Game Over - You ran out of health!');
+      document.getElementById('restart-button').style.display = 'block';
     }
   }
 
