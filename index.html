@@ -52,9 +52,21 @@
 </head>
 <body>
   <div id="game-title"><strong>Steve's Adventure</strong></div>
-  <div id="game-container">
-    <button id="start-button">Start Minecraft Run</button>
-  </div>
+<div id="game-container" style="position: relative; width: 800px; height: 600px; margin: 0 auto;">
+  <div id="start-button" style="
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    z-index: 100;
+  ">Start Minecraft Run</div>
+</div>
   <div id="footer"><strong>Made with 💖 for Lucas and Caleb</strong></div>
 
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
