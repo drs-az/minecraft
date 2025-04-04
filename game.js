@@ -1,4 +1,4 @@
-// game.js - cleaned up to fully remove text-based start, and start game with button properly
+// game.js - fixed layering so Steve stays visible in front of background
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -30,6 +30,7 @@ class MainScene extends Phaser.Scene {
     this.player = this.physics.add.sprite(100, 450, 'steve');
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
+    this.player.setDepth(1);
 
     this.physics.add.collider(this.player, this.platforms);
     this.physics.add.collider(this.coins, this.platforms);
@@ -45,15 +46,13 @@ class MainScene extends Phaser.Scene {
     this.scoreText = this.add.text(16, 16, 'Score: 0', {
       fontSize: '24px',
       fill: '#000'
-    }).setScrollFactor(0);
+    }).setScrollFactor(0).setDepth(10);
 
     this.timerText = this.add.text(650, 16, 'Time: 60', {
       fontSize: '24px',
       fill: '#000'
-    }).setScrollFactor(0);
+    }).setScrollFactor(0).setDepth(10);
 
-    // Remove any in-game text start
-    // Set up button listener to start the game
     this.setupStartButton();
   }
 
@@ -64,7 +63,7 @@ class MainScene extends Phaser.Scene {
       startButton.addEventListener('click', () => {
         startButton.style.display = 'none';
         this.startGame();
-      }, { once: true }); // ensure it only runs once
+      }, { once: true });
     }
   }
 
@@ -90,6 +89,7 @@ class MainScene extends Phaser.Scene {
 
   addSegment(index) {
     let bg = this.add.image(this.backgroundWidth * index + 400, 300, 'background');
+    bg.setDepth(-1); // ensure background goes behind player and platforms
     this.backgrounds.push(bg);
 
     for (let i = 0; i < 3; i++) {
