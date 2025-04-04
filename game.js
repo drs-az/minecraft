@@ -1,4 +1,4 @@
-// game.js - now with Minecraft-style zombies, jumping behavior, and Steve's health system
+// game.js - now with Minecraft-style zombies, jumping, health system, and visual hearts
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -8,6 +8,8 @@ class MainScene extends Phaser.Scene {
     this.gameStarted = false;
     this.timeRemaining = 60;
     this.health = 3;
+    this.maxHealth = 3;
+    this.heartIcons = [];
   }
 
   preload() {
@@ -16,6 +18,7 @@ class MainScene extends Phaser.Scene {
     this.load.image('steve', 'assets/steve.png');
     this.load.image('coin', 'assets/coin.png');
     this.load.image('zombie', 'assets/zombie.png');
+    this.load.image('heart', 'assets/heart.png');
     this.load.audio('coinSound', 'assets/coin.mp3');
   }
 
@@ -53,17 +56,24 @@ class MainScene extends Phaser.Scene {
       fill: '#000'
     }).setScrollFactor(0).setDepth(10);
 
-    this.healthText = this.add.text(16, 48, 'Health: 3', {
-      fontSize: '24px',
-      fill: '#ff0000'
-    }).setScrollFactor(0).setDepth(10);
-
     this.timerText = this.add.text(650, 16, 'Time: 60', {
       fontSize: '24px',
       fill: '#000'
     }).setScrollFactor(0).setDepth(10);
 
+    // Visual hearts for health
+    for (let i = 0; i < this.maxHealth; i++) {
+      let heart = this.add.image(750 - i * 30, 50, 'heart').setScrollFactor(0).setDepth(10).setScale(0.05);
+      this.heartIcons.push(heart);
+    }
+
     this.setupStartButton();
+  }
+
+  updateHearts() {
+    for (let i = 0; i < this.heartIcons.length; i++) {
+      this.heartIcons[i].setVisible(i < this.health);
+    }
   }
 
   setupStartButton() {
@@ -131,7 +141,7 @@ class MainScene extends Phaser.Scene {
   handleZombieCollision(player, zombie) {
     zombie.disableBody(true, true);
     this.health--;
-    this.healthText.setText('Health: ' + this.health);
+    this.updateHearts();
 
     if (this.health <= 0) {
       this.scene.pause();
@@ -159,13 +169,13 @@ class MainScene extends Phaser.Scene {
       this.player.setVelocityY(-450);
     }
 
-    // Make zombies chase and occasionally jump
     this.zombies.children.iterate(zombie => {
       if (zombie.active && this.player.active) {
         const dx = this.player.x - zombie.x;
         const speed = 40;
         if (Math.abs(dx) > 5) {
           zombie.setVelocityX(dx > 0 ? speed : -speed);
+          zombie.setFlipX(dx < 0); // Face toward Steve
         }
 
         if (Phaser.Math.Between(0, 1000) > 995 && zombie.body.blocked.down) {
