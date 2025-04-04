@@ -113,6 +113,7 @@ class MainScene extends Phaser.Scene {
         btn.id = id;
         btn.innerText = text;
         Object.assign(btn.style, {
+          touchAction: 'none',
           position: 'absolute',
           bottom: '20px',
           left,
@@ -129,13 +130,34 @@ class MainScene extends Phaser.Scene {
       const upBtn = makeButton('btn-up', '↑', '100px');
       const rightBtn = makeButton('btn-right', '→', '180px');
 
-      leftBtn.addEventListener('touchstart', () => this.touchControls.left = true);
+      leftBtn.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        this.touchControls.left = true;
+      });
+      leftBtn.addEventListener('pointerup', e => {
+        e.preventDefault();
+        this.touchControls.left = false;
+      });
       leftBtn.addEventListener('touchend', () => this.touchControls.left = false);
 
-      rightBtn.addEventListener('touchstart', () => this.touchControls.right = true);
+      rightBtn.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        this.touchControls.right = true;
+      });
+      rightBtn.addEventListener('pointerup', e => {
+        e.preventDefault();
+        this.touchControls.right = false;
+      });
       rightBtn.addEventListener('touchend', () => this.touchControls.right = false);
 
-      upBtn.addEventListener('touchstart', () => this.touchControls.up = true);
+      upBtn.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        this.touchControls.up = true;
+      });
+      upBtn.addEventListener('pointerup', e => {
+        e.preventDefault();
+        this.touchControls.up = false;
+      });
       upBtn.addEventListener('touchend', () => this.touchControls.up = false);
     }
   }
