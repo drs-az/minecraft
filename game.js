@@ -1,4 +1,4 @@
-// game.js - background music added with 50% volume and stops on game end
+// game.js - fix character/platform alignment and add Steve flip based on direction
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -10,6 +10,7 @@ class MainScene extends Phaser.Scene {
     this.health = 3;
     this.maxHealth = 3;
     this.heartIcons = [];
+    this.playerFacingRight = true;
   }
 
   preload() {
@@ -36,7 +37,7 @@ class MainScene extends Phaser.Scene {
     }
 
     this.player = this.physics.add.sprite(100, 450, 'steve');
-    this.player.setBounce(0.2);
+    this.player.setBounce(0);
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(1);
 
@@ -151,7 +152,7 @@ class MainScene extends Phaser.Scene {
     if (index % 2 === 0) {
       let zombie = this.zombies.create(this.backgroundWidth * index + 600, 520, 'zombie');
       zombie.setCollideWorldBounds(true);
-      zombie.setBounce(0.2);
+      zombie.setBounce(0);
       zombie.setVelocityX(-40);
     }
 
@@ -197,8 +198,16 @@ class MainScene extends Phaser.Scene {
 
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-160);
+      if (this.playerFacingRight) {
+        this.player.toggleFlipX();
+        this.playerFacingRight = false;
+      }
     } else if (this.cursors.right.isDown) {
       this.player.setVelocityX(160);
+      if (!this.playerFacingRight) {
+        this.player.toggleFlipX();
+        this.playerFacingRight = true;
+      }
     } else {
       this.player.setVelocityX(0);
     }
