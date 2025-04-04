@@ -1,4 +1,4 @@
-// game.js - working version of Steve's Adventure with jump
+// game.js - working version of Steve's Adventure with jump fixed
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -35,7 +35,7 @@ class MainScene extends Phaser.Scene {
   }
 
   update() {
-    const isTouchingGround = this.player.body.touching.down;
+    const isTouchingGround = this.player.body.blocked.down;
 
     // Movement
     if (this.cursors.left.isDown) {
