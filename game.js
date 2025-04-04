@@ -63,7 +63,7 @@ class MainScene extends Phaser.Scene {
 
     // Visual hearts for health
     for (let i = 0; i < this.maxHealth; i++) {
-      let heart = this.add.image(750 - i * 30, 50, 'heart').setScrollFactor(0).setDepth(10).setScale(1);
+      let heart = this.add.image(750 - i * 30, 50, 'heart').setScrollFactor(0).setDepth(10).setScale(0.5);
       this.heartIcons.push(heart);
     }
 
