@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Steve's Adventure</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    /* Remove default margins and ensure canvas fills the screen */
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <!-- Load Phaser.js from a CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+  <!-- Load your game script -->
+  <script src="game.js"></script>
+  <!-- Register the Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(function(registration) {
+          console.log('Service Worker registered with scope:', registration.scope);
+        })
+        .catch(function(error) {
+          console.error('Service Worker registration failed:', error);
+        });
+    }
+  </script>
+</body>
+</html>
