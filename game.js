@@ -1,4 +1,4 @@
-// game.js - now with Minecraft-style zombies, jumping, health system, and visual hearts
+// game.js - centered game over text updates for better visuals
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -96,10 +96,7 @@ class MainScene extends Phaser.Scene {
         this.timerText.setText('Time: ' + this.timeRemaining);
         if (this.timeRemaining <= 0) {
           this.scene.pause();
-          this.add.text(this.player.x - 100, 300, 'Game Over!', {
-            fontSize: '48px',
-            fill: '#ff0000'
-          });
+          this.showGameOverText('Game Over!');
         }
       },
       callbackScope: this,
@@ -145,11 +142,20 @@ class MainScene extends Phaser.Scene {
 
     if (this.health <= 0) {
       this.scene.pause();
-      this.add.text(player.x - 100, 300, 'Game Over - You ran out of health!', {
-        fontSize: '42px',
-        fill: '#800000'
-      });
+      this.showGameOverText('Game Over - You ran out of health!');
     }
+  }
+
+  showGameOverText(message) {
+    this.add.text(
+      this.cameras.main.scrollX + this.cameras.main.width / 2,
+      this.cameras.main.scrollY + this.cameras.main.height / 2,
+      message,
+      {
+        fontSize: '48px',
+        fill: '#800000'
+      }
+    ).setOrigin(0.5).setDepth(20);
   }
 
   update() {
@@ -175,7 +181,7 @@ class MainScene extends Phaser.Scene {
         const speed = 40;
         if (Math.abs(dx) > 5) {
           zombie.setVelocityX(dx > 0 ? speed : -speed);
-          zombie.setFlipX(dx < 0); // Face toward Steve
+          zombie.setFlipX(dx < 0);
         }
 
         if (Phaser.Math.Between(0, 1000) > 995 && zombie.body.blocked.down) {
