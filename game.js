@@ -1,4 +1,4 @@
-// game.js - adds win message and restart button on timer end
+// game.js - background music added with 50% volume and stops on game end
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -20,6 +20,7 @@ class MainScene extends Phaser.Scene {
     this.load.image('zombie', 'assets/zombie.png');
     this.load.image('heart', 'assets/heart.png');
     this.load.audio('coinSound', 'assets/coin.mp3');
+    this.load.audio('bgm', 'assets/bgm.mp3');
   }
 
   create() {
@@ -28,6 +29,7 @@ class MainScene extends Phaser.Scene {
     this.coins = this.physics.add.group();
     this.zombies = this.physics.add.group();
     this.coinSound = this.sound.add('coinSound');
+    this.bgm = this.sound.add('bgm', { loop: true, volume: 0.5 });
 
     for (let i = 0; i < 4; i++) {
       this.addSegment(i);
@@ -92,7 +94,7 @@ class MainScene extends Phaser.Scene {
     button.innerText = 'Restart';
     button.style.position = 'absolute';
     button.style.left = '50%';
-    button.style.top = 'calc(50% + 60px)'; // Positioned below the game over text
+    button.style.top = 'calc(50% + 60px)';
     button.style.transform = 'translate(-50%, -50%)';
     button.style.fontSize = '24px';
     button.style.padding = '12px 24px';
@@ -113,6 +115,8 @@ class MainScene extends Phaser.Scene {
 
   startGame() {
     this.gameStarted = true;
+    this.bgm.play();
+
     this.timerEvent = this.time.addEvent({
       delay: 1000,
       callback: () => {
@@ -120,6 +124,7 @@ class MainScene extends Phaser.Scene {
         this.timerText.setText('Time: ' + this.timeRemaining);
         if (this.timeRemaining <= 0) {
           this.scene.pause();
+          if (this.bgm && this.bgm.isPlaying) this.bgm.stop();
           this.showGameOverText('You win!');
           document.getElementById('restart-button').style.display = 'block';
         }
@@ -167,6 +172,7 @@ class MainScene extends Phaser.Scene {
 
     if (this.health <= 0) {
       this.scene.pause();
+      if (this.bgm && this.bgm.isPlaying) this.bgm.stop();
       this.showGameOverText('Game Over - You ran out of health!');
       document.getElementById('restart-button').style.display = 'block';
     }
