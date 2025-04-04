@@ -1,4 +1,4 @@
-// game.js - now with Minecraft-style zombies that chase Steve
+// game.js - now with Minecraft-style zombies, jumping behavior, and Steve's health system
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -7,6 +7,7 @@ class MainScene extends Phaser.Scene {
     this.segmentCount = 0;
     this.gameStarted = false;
     this.timeRemaining = 60;
+    this.health = 3;
   }
 
   preload() {
@@ -50,6 +51,11 @@ class MainScene extends Phaser.Scene {
     this.scoreText = this.add.text(16, 16, 'Score: 0', {
       fontSize: '24px',
       fill: '#000'
+    }).setScrollFactor(0).setDepth(10);
+
+    this.healthText = this.add.text(16, 48, 'Health: 3', {
+      fontSize: '24px',
+      fill: '#ff0000'
     }).setScrollFactor(0).setDepth(10);
 
     this.timerText = this.add.text(650, 16, 'Time: 60', {
@@ -105,7 +111,6 @@ class MainScene extends Phaser.Scene {
       this.coins.create(x + 50, 200, 'coin');
     }
 
-    // Spawn a zombie every other segment
     if (index % 2 === 0) {
       let zombie = this.zombies.create(this.backgroundWidth * index + 600, 520, 'zombie');
       zombie.setCollideWorldBounds(true);
@@ -124,11 +129,17 @@ class MainScene extends Phaser.Scene {
   }
 
   handleZombieCollision(player, zombie) {
-    this.scene.pause();
-    this.add.text(player.x - 100, 300, 'Game Over - Caught by Zombie!', {
-      fontSize: '42px',
-      fill: '#800000'
-    });
+    zombie.disableBody(true, true);
+    this.health--;
+    this.healthText.setText('Health: ' + this.health);
+
+    if (this.health <= 0) {
+      this.scene.pause();
+      this.add.text(player.x - 100, 300, 'Game Over - You ran out of health!', {
+        fontSize: '42px',
+        fill: '#800000'
+      });
+    }
   }
 
   update() {
@@ -148,13 +159,17 @@ class MainScene extends Phaser.Scene {
       this.player.setVelocityY(-450);
     }
 
-    // Make zombies chase Steve
+    // Make zombies chase and occasionally jump
     this.zombies.children.iterate(zombie => {
       if (zombie.active && this.player.active) {
         const dx = this.player.x - zombie.x;
         const speed = 40;
         if (Math.abs(dx) > 5) {
           zombie.setVelocityX(dx > 0 ? speed : -speed);
+        }
+
+        if (Phaser.Math.Between(0, 1000) > 995 && zombie.body.blocked.down) {
+          zombie.setVelocityY(-400);
         }
       }
     });
