@@ -1,5 +1,3 @@
-// game.js - infinite background, continuous platform/coin generation, timer, and coin sound
-
 class MainScene extends Phaser.Scene {
   constructor() {
     super({ key: 'MainScene' });
@@ -23,7 +21,7 @@ class MainScene extends Phaser.Scene {
     this.coins = this.physics.add.group();
     this.coinSound = this.sound.add('coinSound');
 
-    // Create initial background segments
+    // Initial background segments
     for (let i = 0; i < 4; i++) {
       this.addSegment(i);
     }
@@ -31,6 +29,7 @@ class MainScene extends Phaser.Scene {
     this.player = this.physics.add.sprite(100, 450, 'steve');
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
+
     this.physics.add.collider(this.player, this.platforms);
     this.physics.add.collider(this.coins, this.platforms);
     this.physics.add.overlap(this.player, this.coins, this.collectCoin, null, this);
@@ -131,6 +130,7 @@ const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
+  parent: 'game-container', // This ensures the canvas appears in your HTML layout
   physics: {
     default: 'arcade',
     arcade: {
