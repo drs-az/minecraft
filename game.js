@@ -142,9 +142,9 @@ class MainScene extends Phaser.Scene {
 
     for (let i = 0; i < 3; i++) {
       let x = this.backgroundWidth * index + 200 + i * 200;
-      this.platforms.create(x, 580, 'platform').setScale(1.5).refreshBody();
+      this.platforms.create(x, 580, 'platform').setScale(1.5).setOrigin(0.5, 1).refreshBody();
       if (i % 2 === 0) {
-        this.platforms.create(x, 400 - (i * 20), 'platform').refreshBody();
+        this.platforms.create(x, 400 - (i * 20), 'platform').setOrigin(0.5, 1).refreshBody();
       }
       this.coins.create(x + 50, 200, 'coin');
     }
