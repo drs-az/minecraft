@@ -1,4 +1,4 @@
-// game.js - fixed layering so Steve stays visible in front of background
+// game.js - now with Minecraft-style zombies that chase Steve
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -14,6 +14,7 @@ class MainScene extends Phaser.Scene {
     this.load.image('platform', 'assets/platform.png');
     this.load.image('steve', 'assets/steve.png');
     this.load.image('coin', 'assets/coin.png');
+    this.load.image('zombie', 'assets/zombie.png');
     this.load.audio('coinSound', 'assets/coin.mp3');
   }
 
@@ -21,6 +22,7 @@ class MainScene extends Phaser.Scene {
     this.backgrounds = [];
     this.platforms = this.physics.add.staticGroup();
     this.coins = this.physics.add.group();
+    this.zombies = this.physics.add.group();
     this.coinSound = this.sound.add('coinSound');
 
     for (let i = 0; i < 4; i++) {
@@ -34,7 +36,9 @@ class MainScene extends Phaser.Scene {
 
     this.physics.add.collider(this.player, this.platforms);
     this.physics.add.collider(this.coins, this.platforms);
+    this.physics.add.collider(this.zombies, this.platforms);
     this.physics.add.overlap(this.player, this.coins, this.collectCoin, null, this);
+    this.physics.add.overlap(this.player, this.zombies, this.handleZombieCollision, null, this);
 
     this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -89,7 +93,7 @@ class MainScene extends Phaser.Scene {
 
   addSegment(index) {
     let bg = this.add.image(this.backgroundWidth * index + 400, 300, 'background');
-    bg.setDepth(-1); // ensure background goes behind player and platforms
+    bg.setDepth(-1);
     this.backgrounds.push(bg);
 
     for (let i = 0; i < 3; i++) {
@@ -101,6 +105,14 @@ class MainScene extends Phaser.Scene {
       this.coins.create(x + 50, 200, 'coin');
     }
 
+    // Spawn a zombie every other segment
+    if (index % 2 === 0) {
+      let zombie = this.zombies.create(this.backgroundWidth * index + 600, 520, 'zombie');
+      zombie.setCollideWorldBounds(true);
+      zombie.setBounce(0.2);
+      zombie.setVelocityX(-40);
+    }
+
     this.segmentCount++;
   }
 
@@ -109,6 +121,14 @@ class MainScene extends Phaser.Scene {
     this.coinSound.play();
     this.score += 10;
     this.scoreText.setText('Score: ' + this.score);
+  }
+
+  handleZombieCollision(player, zombie) {
+    this.scene.pause();
+    this.add.text(player.x - 100, 300, 'Game Over - Caught by Zombie!', {
+      fontSize: '42px',
+      fill: '#800000'
+    });
   }
 
   update() {
@@ -127,6 +147,17 @@ class MainScene extends Phaser.Scene {
     if ((this.cursors.up.isDown || this.cursors.space.isDown) && isTouchingGround) {
       this.player.setVelocityY(-450);
     }
+
+    // Make zombies chase Steve
+    this.zombies.children.iterate(zombie => {
+      if (zombie.active && this.player.active) {
+        const dx = this.player.x - zombie.x;
+        const speed = 40;
+        if (Math.abs(dx) > 5) {
+          zombie.setVelocityX(dx > 0 ? speed : -speed);
+        }
+      }
+    });
 
     const playerX = this.player.x;
     const neededSegments = Math.floor(playerX / this.backgroundWidth) + 2;
