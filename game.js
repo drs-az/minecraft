@@ -1,4 +1,4 @@
-// game.js - grounded characters, flipped sprites, background music, health, and win/restart logic
+// game.js - adds on-screen touch controls for tablets/mobile
 
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -11,6 +11,7 @@ class MainScene extends Phaser.Scene {
     this.maxHealth = 3;
     this.heartIcons = [];
     this.playerFacingRight = true;
+    this.touchControls = { left: false, right: false, up: false };
   }
 
   preload() {
@@ -62,6 +63,7 @@ class MainScene extends Phaser.Scene {
 
     this.createRestartButton();
     this.setupStartButton();
+    this.setupTouchControls();
   }
 
   updateHearts() {
@@ -100,6 +102,42 @@ class MainScene extends Phaser.Scene {
     button.id = 'restart-button';
     document.getElementById('game-container').appendChild(button);
     button.addEventListener('click', () => window.location.reload());
+  }
+
+  setupTouchControls() {
+    if (/Mobi|Android/i.test(navigator.userAgent)) {
+      const container = document.getElementById('game-container');
+
+      const makeButton = (id, text, left) => {
+        const btn = document.createElement('button');
+        btn.id = id;
+        btn.innerText = text;
+        Object.assign(btn.style, {
+          position: 'absolute',
+          bottom: '20px',
+          left,
+          width: '60px',
+          height: '60px',
+          fontSize: '20px',
+          zIndex: '100'
+        });
+        container.appendChild(btn);
+        return btn;
+      };
+
+      const leftBtn = makeButton('btn-left', '←', '20px');
+      const upBtn = makeButton('btn-up', '↑', '100px');
+      const rightBtn = makeButton('btn-right', '→', '180px');
+
+      leftBtn.addEventListener('touchstart', () => this.touchControls.left = true);
+      leftBtn.addEventListener('touchend', () => this.touchControls.left = false);
+
+      rightBtn.addEventListener('touchstart', () => this.touchControls.right = true);
+      rightBtn.addEventListener('touchend', () => this.touchControls.right = false);
+
+      upBtn.addEventListener('touchstart', () => this.touchControls.up = true);
+      upBtn.addEventListener('touchend', () => this.touchControls.up = false);
+    }
   }
 
   startGame() {
@@ -176,14 +214,17 @@ class MainScene extends Phaser.Scene {
     if (!this.gameStarted) return;
 
     const onGround = this.player.body.blocked.down;
+    const left = this.cursors.left.isDown || this.touchControls.left;
+    const right = this.cursors.right.isDown || this.touchControls.right;
+    const jump = (this.cursors.up.isDown || this.cursors.space.isDown || this.touchControls.up) && onGround;
 
-    if (this.cursors.left.isDown) {
+    if (left) {
       this.player.setVelocityX(-160);
       if (this.playerFacingRight) {
         this.player.toggleFlipX();
         this.playerFacingRight = false;
       }
-    } else if (this.cursors.right.isDown) {
+    } else if (right) {
       this.player.setVelocityX(160);
       if (!this.playerFacingRight) {
         this.player.toggleFlipX();
@@ -193,7 +234,7 @@ class MainScene extends Phaser.Scene {
       this.player.setVelocityX(0);
     }
 
-    if ((this.cursors.up.isDown || this.cursors.space.isDown) && onGround) {
+    if (jump) {
       this.player.setVelocityY(-450);
     }
 
