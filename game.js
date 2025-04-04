@@ -1,3 +1,5 @@
+// game.js - updated to use external HTML start button and clamp camera vertically
+
 class MainScene extends Phaser.Scene {
   constructor() {
     super({ key: 'MainScene' });
@@ -21,7 +23,6 @@ class MainScene extends Phaser.Scene {
     this.coins = this.physics.add.group();
     this.coinSound = this.sound.add('coinSound');
 
-    // Initial background segments
     for (let i = 0; i < 4; i++) {
       this.addSegment(i);
     }
@@ -37,7 +38,7 @@ class MainScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
 
     this.cameras.main.startFollow(this.player);
-    this.cameras.main.setBounds(0, 0, Number.MAX_SAFE_INTEGER, 600);
+    this.cameras.main.setBounds(0, 0, Number.MAX_SAFE_INTEGER, 600); // clamp vertically
     this.physics.world.setBounds(0, 0, Number.MAX_SAFE_INTEGER, 600);
 
     this.score = 0;
@@ -51,30 +52,32 @@ class MainScene extends Phaser.Scene {
       fill: '#000'
     }).setScrollFactor(0);
 
-    this.startText = this.add.text(300, 250, 'Start Minecraft Run', {
-      fontSize: '32px',
-      fill: '#000'
-    }).setInteractive().setScrollFactor(0);
-
-    this.startText.on('pointerdown', () => {
-      this.startText.setVisible(false);
-      this.gameStarted = true;
-      this.timerEvent = this.time.addEvent({
-        delay: 1000,
-        callback: () => {
-          this.timeRemaining--;
-          this.timerText.setText('Time: ' + this.timeRemaining);
-          if (this.timeRemaining <= 0) {
-            this.scene.pause();
-            this.add.text(this.player.x - 100, 300, 'Game Over!', {
-              fontSize: '48px',
-              fill: '#ff0000'
-            });
-          }
-        },
-        callbackScope: this,
-        loop: true
+    const startButton = document.getElementById('start-button');
+    if (startButton) {
+      startButton.addEventListener('click', () => {
+        startButton.style.display = 'none';
+        this.startGame();
       });
+    }
+  }
+
+  startGame() {
+    this.gameStarted = true;
+    this.timerEvent = this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        this.timeRemaining--;
+        this.timerText.setText('Time: ' + this.timeRemaining);
+        if (this.timeRemaining <= 0) {
+          this.scene.pause();
+          this.add.text(this.player.x - 100, 300, 'Game Over!', {
+            fontSize: '48px',
+            fill: '#ff0000'
+          });
+        }
+      },
+      callbackScope: this,
+      loop: true
     });
   }
 
@@ -130,7 +133,7 @@ const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
-  parent: 'game-container', // This ensures the canvas appears in your HTML layout
+  parent: 'game-container',
   physics: {
     default: 'arcade',
     arcade: {
