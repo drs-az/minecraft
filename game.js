@@ -1,83 +1,112 @@
-// game.js - extended world with looping background, more platforms, and collectibles
+// game.js - infinite background, continuous platform/coin generation, timer, and coin sound
 
 class MainScene extends Phaser.Scene {
   constructor() {
     super({ key: 'MainScene' });
+    this.backgroundWidth = 800;
+    this.segmentCount = 0;
+    this.gameStarted = false;
+    this.timeRemaining = 60;
   }
 
   preload() {
     this.load.image('background', 'assets/background.png');
     this.load.image('platform', 'assets/platform.png');
     this.load.image('steve', 'assets/steve.png');
-    this.load.image('coin', 'assets/coin.png'); // Collectible
+    this.load.image('coin', 'assets/coin.png');
+    this.load.audio('coinSound', 'assets/coin.mp3');
   }
 
   create() {
-    // Create scrolling backgrounds
     this.backgrounds = [];
+    this.platforms = this.physics.add.staticGroup();
+    this.coins = this.physics.add.group();
+    this.coinSound = this.sound.add('coinSound');
+
+    // Create initial background segments
     for (let i = 0; i < 4; i++) {
-      let bg = this.add.image(800 * i + 400, 300, 'background');
-      this.backgrounds.push(bg);
+      this.addSegment(i);
     }
 
-    // Static platforms
-    const platforms = this.physics.add.staticGroup();
-    for (let i = 0; i < 10; i++) {
-      platforms.create(i * 300, 580, 'platform').setScale(1.5).refreshBody();
-    }
-    platforms.create(600, 400, 'platform');
-    platforms.create(900, 350, 'platform');
-    platforms.create(1200, 300, 'platform');
-    platforms.create(1500, 250, 'platform');
-
-    // Player setup
     this.player = this.physics.add.sprite(100, 450, 'steve');
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
-
-    // Collide player with platforms
-    this.physics.add.collider(this.player, platforms);
-
-    // Input
-    this.cursors = this.input.keyboard.createCursorKeys();
-
-    // Camera follow for side scrolling
-    this.cameras.main.startFollow(this.player);
-    this.cameras.main.setBounds(0, 0, 3200, 600); // Extended world bounds
-
-    // World bounds
-    this.physics.world.setBounds(0, 0, 3200, 600);
-
-    // Collectibles
-    this.coins = this.physics.add.group({ key: 'coin', repeat: 19, setXY: { x: 100, y: 0, stepX: 150 } });
-    this.coins.children.iterate(child => {
-      child.setBounceY(Phaser.Math.FloatBetween(0.3, 0.6));
-    });
-
-    // Collide coins with platforms
-    this.physics.add.collider(this.coins, platforms);
-
-    // Overlap detection for player collecting coins
+    this.physics.add.collider(this.player, this.platforms);
+    this.physics.add.collider(this.coins, this.platforms);
     this.physics.add.overlap(this.player, this.coins, this.collectCoin, null, this);
 
-    // Score tracking
+    this.cursors = this.input.keyboard.createCursorKeys();
+
+    this.cameras.main.startFollow(this.player);
+    this.cameras.main.setBounds(0, 0, Number.MAX_SAFE_INTEGER, 600);
+    this.physics.world.setBounds(0, 0, Number.MAX_SAFE_INTEGER, 600);
+
     this.score = 0;
     this.scoreText = this.add.text(16, 16, 'Score: 0', {
       fontSize: '24px',
       fill: '#000'
     }).setScrollFactor(0);
+
+    this.timerText = this.add.text(650, 16, 'Time: 60', {
+      fontSize: '24px',
+      fill: '#000'
+    }).setScrollFactor(0);
+
+    this.startText = this.add.text(300, 250, 'Start Minecraft Run', {
+      fontSize: '32px',
+      fill: '#000'
+    }).setInteractive().setScrollFactor(0);
+
+    this.startText.on('pointerdown', () => {
+      this.startText.setVisible(false);
+      this.gameStarted = true;
+      this.timerEvent = this.time.addEvent({
+        delay: 1000,
+        callback: () => {
+          this.timeRemaining--;
+          this.timerText.setText('Time: ' + this.timeRemaining);
+          if (this.timeRemaining <= 0) {
+            this.scene.pause();
+            this.add.text(this.player.x - 100, 300, 'Game Over!', {
+              fontSize: '48px',
+              fill: '#ff0000'
+            });
+          }
+        },
+        callbackScope: this,
+        loop: true
+      });
+    });
+  }
+
+  addSegment(index) {
+    let bg = this.add.image(this.backgroundWidth * index + 400, 300, 'background');
+    this.backgrounds.push(bg);
+
+    for (let i = 0; i < 3; i++) {
+      let x = this.backgroundWidth * index + 200 + i * 200;
+      this.platforms.create(x, 580, 'platform').setScale(1.5).refreshBody();
+      if (i % 2 === 0) {
+        this.platforms.create(x, 400 - (i * 20), 'platform').refreshBody();
+      }
+      this.coins.create(x + 50, 200, 'coin');
+    }
+
+    this.segmentCount++;
   }
 
   collectCoin(player, coin) {
     coin.disableBody(true, true);
+    this.coinSound.play();
     this.score += 10;
     this.scoreText.setText('Score: ' + this.score);
   }
 
   update() {
+    if (!this.gameStarted) return;
+
     const isTouchingGround = this.player.body.blocked.down;
 
-    // Movement
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-160);
     } else if (this.cursors.right.isDown) {
@@ -86,9 +115,14 @@ class MainScene extends Phaser.Scene {
       this.player.setVelocityX(0);
     }
 
-    // Jump (higher jump)
     if ((this.cursors.up.isDown || this.cursors.space.isDown) && isTouchingGround) {
       this.player.setVelocityY(-450);
+    }
+
+    const playerX = this.player.x;
+    const neededSegments = Math.floor(playerX / this.backgroundWidth) + 2;
+    while (this.segmentCount < neededSegments) {
+      this.addSegment(this.segmentCount);
     }
   }
 }
